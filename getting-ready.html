@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cavalry Field Guide</title>
+<meta name="description" content="How to run a Cavalry program: phases, modes, tracker, scripts and edge cases, with animated workflows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Guide pages">
+    <a class="brand" href="index.html">Cavalry<small>Field guide · plugin 0.2.0</small></a>
+    <ol><li><a href="index.html">Overview</a></li><li><a href="getting-ready.html" aria-current="page">Getting ready</a></li><li><a href="recon-fortify.html">Pre-flight, Recon, Fortify</a></li><li><a href="charge.html">Charge</a></li><li><a href="regroup-breach.html">Regroup and Breach</a></li><li><a href="tracker-scripts.html">Tracker and scripts</a></li><li><a href="edge-cases.html">Edge cases</a></li></ol>
+    <p class="meta">Every terminal block is real output from the 0.2.0 scripts. Animations: press Play, step with the arrows, or drag the slider.</p>
+  </nav>
+  <main><div class="col">
+
+<p class="eyebrow">Before the first phase</p>
+<h1>Getting ready</h1>
+<p class="lede">Pre-flight reports problems but never changes repository settings. Prepare these first and it passes on the first run.</p>
+<figure class="plate player" data-anim="ready" data-durations="[2600,1500,1500,1500,1500,1500,3000]">
+  <div class="stage"><img src="assets/ready/00.jpg" width="1400" height="560" alt="The six groups, ticked one by one, ending with the first prompt."></div>
+  <div class="controls">
+    <button type="button" class="play" aria-pressed="false">Play</button>
+    <button type="button" class="prev" aria-label="Previous step">◀</button>
+    <button type="button" class="nxt" aria-label="Next step">▶</button>
+    <input type="range" id="scrub-ready" min="0" max="6" value="0" aria-label="Step">
+    <span class="count">1 / 7</span>
+  </div>
+  <figcaption>The six groups, ticked one by one, ending with the first prompt.</figcaption>
+</figure>
+<h2>Your checklist</h2>
+<p>Ticks are saved in this browser only. <span class="progress" aria-live="polite"></span></p>
+<h3>Repository</h3><div class="check"><input type="checkbox" id="r1"><label for="r1">Clean working tree on the branch to audit<span class="how"><code>git status --short</code> prints nothing</span></label></div><div class="check"><input type="checkbox" id="r2"><label for="r2">GitHub remote<span class="how"><code>git remote -v</code> shows github.com</span></label></div><div class="check"><input type="checkbox" id="r3"><label for="r3">GitHub CLI signed in<span class="how"><code>gh auth status</code> says &quot;Logged in&quot;</span></label></div><div class="check"><input type="checkbox" id="r4"><label for="r4">Real git identity<span class="how"><code>git config user.name</code> / <code>user.email</code> are yours, not &quot;Your Name&quot;</span></label></div>
+<h3>Branches</h3><div class="check"><input type="checkbox" id="b1"><label for="b1">Integration branch exists and is pushed<span class="how"><code>git ls-remote --heads origin staging</code> prints one line</span></label></div><div class="check"><input type="checkbox" id="b2"><label for="b2">Production branch decided<span class="how">usually <code>main</code></span></label></div><div class="check"><input type="checkbox" id="b3"><label for="b3">Merge methods allowed<span class="how">squash into staging, merge commit into main</span></label></div>
+<h3>Protection and CI</h3><div class="check"><input type="checkbox" id="c1"><label for="c1">Rulesets scoped per branch<span class="how"><code>gh api repos/{owner}/{repo}/rulesets</code>: none target all branches</span></label></div><div class="check"><input type="checkbox" id="c2"><label for="c2">CI runs tests on PRs to both branches<span class="how"><code>.github/workflows/*</code> <code>pull_request</code> covers staging and main</span></label></div><div class="check"><input type="checkbox" id="c3"><label for="c3">Those checks are required<span class="how">Mode C waits on required checks; without them it has nothing to wait on</span></label></div>
+<h3>Hosting and backend</h3><div class="check"><input type="checkbox" id="h1"><label for="h1">Vercel project linked<span class="how"><code>.vercel/project.json</code> exists, or check the dashboard</span></label></div><div class="check"><input type="checkbox" id="h2"><label for="h2">Backend known; live rules visible<span class="how">read-only in your backend's console or CLI</span></label></div><div class="check"><input type="checkbox" id="h3"><label for="h3">Planned migrations known<span class="how">any environment split or recreate coming soon</span></label></div>
+<h3>Project hygiene</h3><div class="check"><input type="checkbox" id="p1"><label for="p1">Lint, typecheck and tests pass locally<span class="how">the scripts in <code>package.json</code></span></label></div><div class="check"><input type="checkbox" id="p2"><label for="p2"><code>.cavalry/tmp/</code> is git-ignored<span class="how"><code>grep -n .cavalry/tmp .gitignore</code> finds it</span></label></div><div class="check"><input type="checkbox" id="p3"><label for="p3">Tracker location chosen<span class="how">default <code>CAVALRY-TRACKER.md</code> at the repo root</span></label></div>
+<h3>Decisions</h3><div class="check"><input type="checkbox" id="d1"><label for="d1">Audit scope<span class="how">whole repo, or named modules</span></label></div><div class="check"><input type="checkbox" id="d2"><label for="d2">Recon mode<span class="how">parallel (faster) or sequential (cheaper)</span></label></div><div class="check"><input type="checkbox" id="d3"><label for="d3">Who may merge, promote, deploy<span class="how">names, not roles</span></label></div><div class="check"><input type="checkbox" id="d4"><label for="d4">How Charge runs<span class="how">Mode A, B or C, and any stop point</span></label></div>
+<h2>Quick start</h2>
+<p>Any clear phrasing that names the phase works. These are the prompts used in this guide.</p>
+<h3>1. Audit</h3><div class="prompt"><span>/cavalry:recon  Audit the whole repo, parallel mode.</span><button type="button" data-copy="/cavalry:recon  Audit the whole repo, parallel mode.">Copy</button></div>
+<p>Pre-flight reports in one block; Recon audits read-only, asks decisions in batches of four, and builds the queue with Deploy values.</p>
+<h3>2. Protect</h3><div class="prompt"><span>/cavalry:fortify</span><button type="button" data-copy="/cavalry:fortify">Copy</button></div>
+<p>Characterization tests for risky paths, a shared backend mock, and required CI.</p>
+<h3>3. Fix</h3><div class="prompt"><span>/cavalry:charge  Use Mode C: merge to staging yourself, pause after Q5.</span><button type="button" data-copy="/cavalry:charge  Use Mode C: merge to staging yourself, pause after Q5.">Copy</button></div>
+<p>One branch and PR per item, merged to staging on green checks; one line per merge; a Rally Point at Q5.</p>
+<h3>Any time</h3><div class="prompt"><span>/cavalry:status</span><button type="button" data-copy="/cavalry:status">Copy</button></div>
+<h3>4. Restructure (optional)</h3><div class="prompt"><span>/cavalry:regroup</span><button type="button" data-copy="/cavalry:regroup">Copy</button></div>
+<h3>5. Roll out</h3><div class="prompt"><span>/cavalry:breach</span><button type="button" data-copy="/cavalry:breach">Copy</button></div>
+<div class="callout human"><strong>New session?</strong>Charge always starts in Mode A. Say &quot;use Mode C&quot; again.</div>
+
+    <nav class="next" aria-label="Page navigation"><a href="index.html">← Overview</a><a href="recon-fortify.html">Pre-flight, Recon, Fortify →</a></nav>
+  </div></main>
+</div>
+<script src="player.js"></script>
+</body>
+</html>

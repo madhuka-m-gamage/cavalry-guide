@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cavalry Field Guide</title>
+<meta name="description" content="How to run a Cavalry program: phases, modes, tracker, scripts and edge cases, with animated workflows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Guide pages">
+    <a class="brand" href="index.html">Cavalry<small>Field guide · plugin 0.2.0</small></a>
+    <ol><li><a href="index.html">Overview</a></li><li><a href="getting-ready.html">Getting ready</a></li><li><a href="recon-fortify.html">Pre-flight, Recon, Fortify</a></li><li><a href="charge.html">Charge</a></li><li><a href="regroup-breach.html">Regroup and Breach</a></li><li><a href="tracker-scripts.html">Tracker and scripts</a></li><li><a href="edge-cases.html" aria-current="page">Edge cases</a></li></ol>
+    <p class="meta">Every terminal block is real output from the 0.2.0 scripts. Animations: press Play, step with the arrows, or drag the slider.</p>
+  </nav>
+  <main><div class="col">
+
+<p class="eyebrow">Limits, honestly</p>
+<h1>Edge cases</h1>
+<p class="lede">What Cavalry does when things aren't ordinary, and where its scripts stop. Every script limit below was demonstrated for real.</p>
+<div class="filters" role="group" aria-label="Filter by area">
+  <button type="button" data-area="all" aria-pressed="true">All</button>
+  <button type="button" data-area="flow" aria-pressed="false">Program flow</button>
+  <button type="button" data-area="charge" aria-pressed="false">Charge</button>
+  <button type="button" data-area="tracker" aria-pressed="false">Tracker</button>
+  <button type="button" data-area="github" aria-pressed="false">GitHub</button>
+  <button type="button" data-area="scripts" aria-pressed="false">Script limits</button>
+  <button type="button" data-area="env" aria-pressed="false">Environment</button>
+</div>
+<section data-area-section="flow"><h2>Program flow</h2><div class="tbl"><table><thead><tr><th>Situation</th><th>What Cavalry does</th><th>What you do</th></tr></thead><tbody><tr><td>A phase is invoked early</td><td>Warns plainly and asks</td><td>Proceed only with a reason</td></tr><tr><td>Pre-flight goes stale</td><td>Charge re-runs it when the header says <code>stale</code></td><td><code>cavalry-tracker set-header Preflight stale</code></td></tr><tr><td>A bug worth fixing now (Recon, Fortify)</td><td>Says so and asks; never fixes</td><td>Route through Charge</td></tr><tr><td>A critical exposure is live</td><td>Tagged <code>LIVE</code>; immediate stopgap question</td><td>Answer now</td></tr></tbody></table></div></section>
+<section data-area-section="charge"><h2>Charge and Mode C</h2><div class="tbl"><table><thead><tr><th>Situation</th><th>What Cavalry does</th><th>What you do</th></tr></thead><tbody><tr><td>&quot;Keep going&quot;</td><td>Ambiguous: listed for Mode B and Mode C</td><td>Say the mode</td></tr><tr><td>Checks red twice</td><td>Halts with a Rally Point</td><td>Investigate</td></tr><tr><td>Stop condition reached</td><td>Finishes the item, then halts</td><td>Review and resume</td></tr></tbody></table></div></section>
+<section data-area-section="tracker"><h2>Tracker</h2><div class="tbl"><table><thead><tr><th>Situation</th><th>What Cavalry does</th><th>What you do</th></tr></thead><tbody><tr><td>No tracker</td><td>Scripts refuse; status says none started</td><td>Run Recon or <code>init</code></td></tr><tr><td>v1 tracker</td><td>Refused with a migration hint</td><td>Run a phase skill; it migrates first</td></tr><tr><td>A broken section heading</td><td>Scripts refuse (&quot;has no ## … section&quot;)</td><td>Restore the heading</td></tr><tr><td>Two writers at once</td><td>Each command re-reads right before writing</td><td>Avoid parallel writers</td></tr><tr><td><code>|</code> in a title</td><td>Escaped so the table holds</td><td>Nothing</td></tr></tbody></table></div><pre class="term"><span class="cmd">$ cavalry-tracker add-item Q1 Anything --deploy none</span>
+<span class="err">cavalry-tracker: tracker has no &quot;## Queue&quot; section — is it a v2 tracker? (see TRACKER-CONVENTION.md § Migrating)</span>
+<span class="err">[exit 2]</span></pre><pre class="term"><span class="cmd">$ cavalry-tracker add-item Q9 Again --deploy none</span>
+<span class="err">cavalry-tracker: queue item Q9 already exists</span>
+<span class="err">[exit 2]</span></pre><p class="term-label">A title containing | is stored escaped</p><pre class="term">| Q12 | Split \| pipe in title | — | none | — |  | queued |</pre></section>
+<section data-area-section="github"><h2>GitHub state</h2><div class="tbl"><table><thead><tr><th>Situation</th><th>What Cavalry does</th><th>What you do</th></tr></thead><tbody><tr><td><code>gh</code> missing, or no remote</td><td>&quot;PR state unavailable (…)&quot;; the rest works</td><td>Install <code>gh</code> or add the remote</td></tr><tr><td>Several PRs on one branch</td><td>The highest-numbered PR wins</td><td>Close stale PRs</td></tr><tr><td>PR closed unmerged</td><td>Shows <code>CLOSED</code>; not done</td><td>Reopen, or defer/drop the item</td></tr><tr><td>Branch renamed</td><td>No PR match</td><td><code>set-item &lt;id&gt; branch=&lt;new&gt;</code></td></tr></tbody></table></div><pre class="term"><span class="cmd">$ cavalry-status   # branch has #30 (closed) and #31 (open)</span>
+  Q10  Remove dead CSV exporter  in progress  code-only  cavalry/q10-csv  #31 OPEN → staging
+<span class="ok">[exit 0]</span></pre><pre class="term"><span class="cmd">$ cavalry-status   # PR closed without merging</span>
+  Q10  Remove dead CSV exporter  in progress  code-only  cavalry/q10-csv  #32 CLOSED → staging
+<span class="ok">[exit 0]</span></pre></section>
+<section data-area-section="scripts"><h2>Script limits</h2>
+<h3>cavalry-decl-diff</h3><ul><li>JS/TS only; anything else exits 2.</li><li>Top-level only: removed class methods and <code>export { a, b }</code> entries are not detected.</li><li>In <code>const a = 1, b = 2</code> only the first name is tracked.</li></ul>
+<p class="term-label">Not detected: a class method and an export-list entry removed</p><pre class="term"><span class="cmd">$ cavalry-decl-diff src/BulkEmailModal.tsx</span>
+5 declarations, none removed
+<span class="ok">[exit 0]</span></pre><pre class="term"><span class="cmd">$ cavalry-decl-diff src/app.css</span>
+<span class="err">cavalry-decl-diff: unsupported extension .css; supported: .js .jsx .ts .tsx .mjs .cjs .mts .cts</span>
+<span class="err">[exit 2]</span></pre>
+<h3>cavalry-move-codemod</h3><ul><li>Rewrites code imports, including tracked CSS imports and the moved file's own relative imports.</li><li>Leaves docs, config files and CSS <code>@import</code>/<code>url()</code> untouched.</li><li>Only wildcard <code>paths</code> aliases; refuses existing destinations and untracked sources.</li></ul>
+<pre class="term"><span class="cmd">$ cavalry-move-codemod moves-3.txt --apply</span>
+<span class="err">cavalry-move-codemod: destination src/lib/firebase.ts already exists</span>
+<span class="err">[exit 2]</span></pre><pre class="term"><span class="cmd">$ cavalry-move-codemod moves-4.txt</span>
+<span class="err">cavalry-move-codemod: src/ghost.ts is not a tracked file or directory</span>
+<span class="err">[exit 2]</span></pre>
+<h3>cavalry-verify-pure-move</h3><ul><li>A heuristic: an import line that also gains logic still passes. The test gate and your review still matter.</li></ul>
+<p class="term-label">Passes: a dynamic import that gained .then(…)</p><pre class="term"><span class="cmd">$ cavalry-verify-pure-move</span>
+pure move against HEAD: 2 renamed, 2 modified (import lines only)
+<span class="ok">[exit 0]</span></pre></section>
+<section data-area-section="env"><h2>Environment</h2><div class="tbl"><table><thead><tr><th>Situation</th><th>What Cavalry does</th><th>What you do</th></tr></thead><tbody><tr><td>Sandbox rejects compound commands</td><td>One simple command per call</td><td>Logic goes in a <code>.cavalry/tmp/</code> script</td></tr><tr><td>Scratchpad wiped on resume</td><td>State lives in the tracker; helpers in <code>.cavalry/tmp/</code></td><td>Nothing</td></tr><tr><td>Skill edits don't take effect</td><td>Claude Code caches skills</td><td>Re-register with <code>/plugin</code></td></tr></tbody></table></div></section>
+
+    <nav class="next" aria-label="Page navigation"><a href="tracker-scripts.html">← Tracker and scripts</a></nav>
+  </div></main>
+</div>
+<script src="player.js"></script>
+</body>
+</html>

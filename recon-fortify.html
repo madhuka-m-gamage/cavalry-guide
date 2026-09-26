@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cavalry Field Guide</title>
+<meta name="description" content="How to run a Cavalry program: phases, modes, tracker, scripts and edge cases, with animated workflows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Guide pages">
+    <a class="brand" href="index.html">Cavalry<small>Field guide · plugin 0.2.0</small></a>
+    <ol><li><a href="index.html">Overview</a></li><li><a href="getting-ready.html">Getting ready</a></li><li><a href="recon-fortify.html" aria-current="page">Pre-flight, Recon, Fortify</a></li><li><a href="charge.html">Charge</a></li><li><a href="regroup-breach.html">Regroup and Breach</a></li><li><a href="tracker-scripts.html">Tracker and scripts</a></li><li><a href="edge-cases.html">Edge cases</a></li></ol>
+    <p class="meta">Every terminal block is real output from the 0.2.0 scripts. Animations: press Play, step with the arrows, or drag the slider.</p>
+  </nav>
+  <main><div class="col">
+
+<p class="eyebrow">Phases 0–2</p>
+<h1>Pre-flight, Recon, Fortify</h1>
+<p class="lede">Establish the environment once, audit read-only, then pin down risky behaviour with tests before anything changes.</p>
+<h2 id="preflight">Pre-flight</h2>
+<p>Run by Recon at the start of a program; Charge re-runs it when the tracker says <code>Preflight: stale</code>. Results go into the tracker header.</p>
+<div class="tbl"><table><thead><tr><th>#</th><th>Check</th><th>Why it matters</th></tr></thead><tbody><tr><td>1</td><td>Write and delete a probe file in the target</td><td>A session locked to another worktree can't write, and neither can its subagents</td></tr><tr><td>2</td><td>Git identity is real</td><td>Hosting can block deploys from placeholder authors</td></tr><tr><td>3</td><td>Branch model (asks you)</td><td>Squash into integration, merge commit into production</td></tr><tr><td>4</td><td>Rulesets and branch protection (read-only)</td><td>Rules on all branches and wrong merge methods cause plumbing PRs</td></tr><tr><td>5</td><td>CI runs the full gate and is required</td><td>If not, Fortify's last PR adds it</td></tr><tr><td>6</td><td>Gates really gate</td><td>A typecheck missing type packages &quot;passes&quot; while checking nothing</td></tr><tr><td>7</td><td>Live state (asks or reads)</td><td>Critical findings live today get <code>LIVE</code> and a stopgap question</td></tr><tr><td>8</td><td>Environments (asks)</td><td>Projects, IDs, domains; planned migrations</td></tr><tr><td>9</td><td>Operating constraints</td><td>Sandbox limits, bots to ignore, who may merge, promote, deploy</td></tr><tr><td>10</td><td><code>.cavalry/tmp/</code> in <code>.gitignore</code></td><td>Helper scripts survive a session resume</td></tr></tbody></table></div>
+<h2 id="recon">Recon</h2>
+<p>Invoke with <code>/cavalry:recon</code>. Never changes code or deploys.</p>
+<ol class="steps"><li>Runs pre-flight, then asks only what has more than one reasonable answer: branch, uncommitted work, scope, backend, findings location, parallel or sequential.</li><li>In parallel mode: one agent per module <strong>plus one that owns the authorization matrix</strong>, sharing <code>ids-registry.md</code>, each returning at most 20 lines.</li><li>Removes duplicates by root cause and spot-verifies every critical finding.</li><li>Checks your quality gates actually cover the code; marks every finding <code>Verified: read | ran | unverified</code>.</li><li>Asks decisions in batches of four with a recommendation, and builds the queue with <code>Deploy</code> values.</li></ol>
+<div class="tbl"><table><thead><tr><th>Situation</th><th>What Cavalry does</th><th>What you do</th></tr></thead><tbody><tr><td>A critical finding is live in production</td><td>Tags it <code>LIVE</code>; asks a stopgap question at once</td><td>Decide the stopgap now</td></tr><tr><td>Something looks urgent to fix</td><td>Says so and asks; never fixes it</td><td>Route it through Charge</td></tr><tr><td>Uncommitted work in the tree</td><td>Asks: stash, commit, or proceed visibly</td><td>Choose</td></tr></tbody></table></div>
+<h2 id="fortify">Fortify</h2>
+<p>Invoke with <code>/cavalry:fortify</code>. Writes tests, test infrastructure and CI, never fixes.</p>
+<ol class="steps"><li>Detects the stack and test runner; confirms existing tests pass first.</li><li>Creates one shared backend fake that re-exports the real SDK's sentinel helpers.</li><li>Writes characterization tests named <code>BUG &lt;id&gt; … flips in &lt;Qn&gt;</code> for money, auth and flagged paths.</li><li>Corrects Recon findings that don't reproduce, on the record.</li><li>Done only when CI runs the full gate on both branches and the checks are required.</li></ol>
+<div class="tbl"><table><thead><tr><th>Situation</th><th>What Cavalry does</th><th>What you do</th></tr></thead><tbody><tr><td>Recon isn't done</td><td>Warns and asks whether to proceed</td><td>Proceed only with a reason</td></tr><tr><td>The existing suite already fails</td><td>Stops before writing new tests</td><td>Fix or quarantine failures first</td></tr><tr><td>It can't mark checks required</td><td>Raises an open question</td><td>Set required checks yourself</td></tr></tbody></table></div>
+
+    <nav class="next" aria-label="Page navigation"><a href="getting-ready.html">← Getting ready</a><a href="charge.html">Charge →</a></nav>
+  </div></main>
+</div>
+<script src="player.js"></script>
+</body>
+</html>

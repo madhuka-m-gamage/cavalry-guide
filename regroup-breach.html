@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cavalry Field Guide</title>
+<meta name="description" content="How to run a Cavalry program: phases, modes, tracker, scripts and edge cases, with animated workflows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Guide pages">
+    <a class="brand" href="index.html">Cavalry<small>Field guide · plugin 0.2.0</small></a>
+    <ol><li><a href="index.html">Overview</a></li><li><a href="getting-ready.html">Getting ready</a></li><li><a href="recon-fortify.html">Pre-flight, Recon, Fortify</a></li><li><a href="charge.html">Charge</a></li><li><a href="regroup-breach.html" aria-current="page">Regroup and Breach</a></li><li><a href="tracker-scripts.html">Tracker and scripts</a></li><li><a href="edge-cases.html">Edge cases</a></li></ol>
+    <p class="meta">Every terminal block is real output from the 0.2.0 scripts. Animations: press Play, step with the arrows, or drag the slider.</p>
+  </nav>
+  <main><div class="col">
+
+<p class="eyebrow">Phases 4–5</p>
+<h1>Regroup and Breach</h1>
+<p class="lede">An optional restructure that proves it changed nothing, then a rollout where every production step waits for your go.</p>
+<h2 id="regroup">Regroup (optional)</h2>
+<figure class="plate player" data-anim="regroup" data-durations="[2600,1500,1500,1500,1500,1500,1500,1500,3000]">
+  <div class="stage"><img src="assets/regroup/00.jpg" width="1400" height="546" alt="One group: manifest, dry run, your confirmation, apply, test gate, pure-move proof, PR. Anything impure goes to Charge."></div>
+  <div class="controls">
+    <button type="button" class="play" aria-pressed="false">Play</button>
+    <button type="button" class="prev" aria-label="Previous step">◀</button>
+    <button type="button" class="nxt" aria-label="Next step">▶</button>
+    <input type="range" id="scrub-regroup" min="0" max="8" value="0" aria-label="Step">
+    <span class="count">1 / 9</span>
+  </div>
+  <figcaption>One group: manifest, dry run, your confirmation, apply, test gate, pure-move proof, PR. Anything impure goes to Charge.</figcaption>
+</figure>
+<ol class="steps"><li>Write a manifest, one <code>old -&gt; new</code> per line, placing every file the remaining queue will touch.</li><li>Dry run shows every move and import rewrite; nothing changes until you confirm.</li><li><code>--apply</code> uses <code>git mv</code> and rewrites imports; then the full gate; then <code>cavalry-verify-pure-move</code>.</li><li>One PR per group; the next group starts after it merges.</li></ol>
+<p class="term-label">Real output: the dry run</p><pre class="term"><span class="cmd">$ cavalry-move-codemod moves-1.txt</span>
+move    src/applications.ts -&gt; src/features/applications/api.ts
+rewrite
+  src/Page.test.ts: '@/applications' -&gt; '@/features/applications/api'
+  src/Page.test.ts: '@/applications' -&gt; '@/features/applications/api'
+  src/Page.tsx: './applications' -&gt; './features/applications/api'
+  src/Page.tsx: './applications' -&gt; './features/applications/api'
+  src/applications.ts: './applications.css' -&gt; '../../applications.css'
+1 moves, 5 import rewrites in 3 files (dry run — nothing changed; pass --apply to perform)
+<span class="ok">[exit 0]</span></pre>
+<p class="term-label">Limit: non-code references are left for you</p><pre class="term"><span class="cmd">$ grep -n applications README.md   # non-code references are left alone</span>
+1:See src/applications.ts for the list API.
+<span class="ok">[exit 0]</span></pre>
+<h2 id="breach">Breach</h2>
+<figure class="plate player" data-anim="breach" data-durations="[2600,1500,1500,1500,1500,1500,1500,1500,1500,1500,3000]">
+  <div class="stage"><img src="assets/breach/00.jpg" width="1400" height="546" alt="A go for each step, then verify. A failed verification rolls back only that step and stops."></div>
+  <div class="controls">
+    <button type="button" class="play" aria-pressed="false">Play</button>
+    <button type="button" class="prev" aria-label="Previous step">◀</button>
+    <button type="button" class="nxt" aria-label="Next step">▶</button>
+    <input type="range" id="scrub-breach" min="0" max="10" value="0" aria-label="Step">
+    <span class="count">1 / 11</span>
+  </div>
+  <figcaption>A go for each step, then verify. A failed verification rolls back only that step and stops.</figcaption>
+</figure>
+<ol class="steps"><li>Reads, read-only, what is actually live. It never assumes <code>main</code> equals production.</li><li>Builds the runbook from <code>Deploy</code> values in order, with the promotion (merge commit) in its place.</li><li>Each step has a pre-check, a verification and its own rollback.</li><li>You approve the runbook, then say go before every production step.</li><li>For rules backends: an emulator test, then a byte-identical check of the live ruleset.</li></ol>
+<div class="tbl"><table><thead><tr><th>Situation</th><th>What Cavalry does</th><th>What you do</th></tr></thead><tbody><tr><td>A verification fails</td><td>Rolls back that step, then stops</td><td>Decide how to continue</td></tr><tr><td>Paused partway</td><td>Phase stays <code>in progress</code>, with the real state recorded</td><td>Resume later</td></tr><tr><td>Production differs from <code>main</code></td><td>Reports it first</td><td>Reconcile if needed</td></tr></tbody></table></div>
+
+    <nav class="next" aria-label="Page navigation"><a href="charge.html">← Charge</a><a href="tracker-scripts.html">Tracker and scripts →</a></nav>
+  </div></main>
+</div>
+<script src="player.js"></script>
+</body>
+</html>

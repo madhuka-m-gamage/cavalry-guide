@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cavalry Field Guide</title>
+<meta name="description" content="How to run a Cavalry program: phases, modes, tracker, scripts and edge cases, with animated workflows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Guide pages">
+    <a class="brand" href="index.html">Cavalry<small>Field guide · plugin 0.2.0</small></a>
+    <ol><li><a href="index.html">Overview</a></li><li><a href="getting-ready.html">Getting ready</a></li><li><a href="recon-fortify.html">Pre-flight, Recon, Fortify</a></li><li><a href="charge.html" aria-current="page">Charge</a></li><li><a href="regroup-breach.html">Regroup and Breach</a></li><li><a href="tracker-scripts.html">Tracker and scripts</a></li><li><a href="edge-cases.html">Edge cases</a></li></ol>
+    <p class="meta">Every terminal block is real output from the 0.2.0 scripts. Animations: press Play, step with the arrows, or drag the slider.</p>
+  </nav>
+  <main><div class="col">
+
+<p class="eyebrow">Phase 3</p>
+<h1>Charge</h1>
+<p class="lede">The queue, one item at a time: a failing test first, a branch and a PR per item, and nothing that touches production.</p>
+<h2>Before the first item</h2>
+<p>A <strong>coupling pass</strong> lists the files each item touches and orders the queue so producers come before consumers and shared-file items sit together. The order is saved as <code>Queue order</code>.</p>
+<h2>The per-item loop</h2>
+<figure class="plate player" data-anim="item-loop" data-durations="[2600,1500,1500,1500,1500,1500,1500,1500,1500,1500,3000]">
+  <div class="stage"><img src="assets/item-loop/00.jpg" width="1400" height="504" alt="Every item: failing test, implement, decl-diff, full gate, commit, PR with Rollout, merge, resolve-item. A red gate goes back to &quot;Implement&quot;."></div>
+  <div class="controls">
+    <button type="button" class="play" aria-pressed="false">Play</button>
+    <button type="button" class="prev" aria-label="Previous step">◀</button>
+    <button type="button" class="nxt" aria-label="Next step">▶</button>
+    <input type="range" id="scrub-item-loop" min="0" max="10" value="0" aria-label="Step">
+    <span class="count">1 / 11</span>
+  </div>
+  <figcaption>Every item: failing test, implement, decl-diff, full gate, commit, PR with Rollout, merge, resolve-item. A red gate goes back to &quot;Implement&quot;.</figcaption>
+</figure>
+<h2>Choosing a mode</h2>
+<div class="tbl"><table><thead><tr><th>Mode</th><th>Say</th><th>Behaviour</th></tr></thead><tbody><tr><td>A · strict-sequential</td><td>nothing: every run starts here</td><td>Opens a PR and waits for you to merge it</td></tr><tr><td>B · stacked</td><td>&quot;continue without waiting&quot;, &quot;work through the rest&quot;</td><td>Branches each item off the previous unmerged one; you merge in order</td></tr><tr><td>C · auto-merge to staging</td><td>&quot;merge to staging yourself&quot;, or &quot;use Mode C&quot;</td><td>Waits once for required checks; merges to staging on green; stops before main</td></tr></tbody></table></div>
+<div class="callout human"><strong>Say the mode.</strong>&quot;Keep going&quot; is listed as a trigger for both Mode B and Mode C. Name the one you want.</div>
+<figure class="plate"><img src="assets/modes.jpg" width="1400" height="456" alt="The three modes as branch graphs. Only Mode C merges by itself, and only into staging."><figcaption>The three modes as branch graphs. Only Mode C merges by itself, and only into staging.</figcaption></figure>
+<h2>Mode C, step by step</h2>
+<figure class="plate player" data-anim="mode-c" data-durations="[2600,1500,1500,1500,1500,1500,1500,1500,1500,1500,3000]">
+  <div class="stage"><img src="assets/mode-c/00.jpg" width="1400" height="588" alt="A red check and its fix, a green merge, the next item, then the stop condition. Main is never touched."></div>
+  <div class="controls">
+    <button type="button" class="play" aria-pressed="false">Play</button>
+    <button type="button" class="prev" aria-label="Previous step">◀</button>
+    <button type="button" class="nxt" aria-label="Next step">▶</button>
+    <input type="range" id="scrub-mode-c" min="0" max="10" value="0" aria-label="Step">
+    <span class="count">1 / 11</span>
+  </div>
+  <figcaption>A red check and its fix, a green merge, the next item, then the stop condition. Main is never touched.</figcaption>
+</figure>
+<h3>Stop conditions and Rally Points</h3>
+<p>Set a stop point ("pause after Q11", a time, a count), or ask it to stop before any item whose <code>Deploy</code> isn't <code>code-only</code>. Every halt writes a Rally Point: what merged, what's pending, and a ⚠️ list of what you must do, in <code>Deploy</code> order.</p>
+<h2>Edge cases</h2>
+<div class="tbl"><table><thead><tr><th>Situation</th><th>What Cavalry does</th><th>What you do</th></tr></thead><tbody><tr><td>A new session</td><td>Starts in Mode A, whatever the log says</td><td>Name the mode again</td></tr><tr><td>Checks red twice on one item</td><td>Halts with a Rally Point</td><td>Investigate</td></tr><tr><td>No required checks configured</td><td><code>--watch --required</code> has nothing to wait on</td><td>Make the test job required</td></tr><tr><td>An item needs a production step</td><td>Records it in <code>Deploy</code> for Breach</td><td>Nothing</td></tr><tr><td>You merged a PR by hand</td><td>Status shows drift and the fix command</td><td>Run the printed <code>resolve-item</code></td></tr><tr><td>A scripted edit removed a function</td><td><code>cavalry-decl-diff</code> exits 1 and names it</td><td>Restore it before tests</td></tr></tbody></table></div>
+<p class="term-label">Real output: decl-diff catching two lost declarations</p><pre class="term"><span class="cmd">$ cavalry-decl-diff src/BulkEmailModal.tsx</span>
+<span class="warn">removed: handleReset</span>
+<span class="warn">removed: mailtoUrl</span>
+added: sendBatch
+4 declarations, 2 removed — check this was intended before running tests
+<span class="err">[exit 1]</span></pre>
+
+    <nav class="next" aria-label="Page navigation"><a href="recon-fortify.html">← Pre-flight, Recon, Fortify</a><a href="regroup-breach.html">Regroup and Breach →</a></nav>
+  </div></main>
+</div>
+<script src="player.js"></script>
+</body>
+</html>
